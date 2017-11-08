@@ -12,8 +12,8 @@ import requests as req
 from PyQt4 import QtGui, QtCore
 
 base_url = 'http://api.cloudike.hyunhoo.xyz'
-
 links = []
+
 
 class DragListView(QtGui.QListWidget):
     def __init__(self, type, parent=None):
