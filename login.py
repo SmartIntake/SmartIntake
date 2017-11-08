@@ -8,11 +8,7 @@ Created on Tue Nov  7 19:47:10 2017
 import sys
 import os
 import zipfile
-
-from PyQt4 import QtGui, QtCore
 import requests as req
-import json
-
 from PyQt4 import QtGui, QtCore
 
 base_url = 'http://api.cloudike.hyunhoo.xyz'
@@ -74,7 +70,6 @@ def send_file(file_name):
 
 def upload_file(response, file_name):
     json_data =response.json()
-    print(response.json())
     confirm_url = json_data["confirm_url"]
     upload_url = json_data["url"]
 
@@ -85,21 +80,13 @@ def upload_file(response, file_name):
     for key in keys:
         tmp_tuple = (key, dict(json_data["headers"])[key])
         data.append(tmp_tuple)
-        # data[key] = response.headers.get(key)
     tmp_tuple = ('file', open(file_name, 'rb'))
     data.append(tmp_tuple)
-    print(data)
-    # data['file'] = open(file_name, 'rb')
-    # print(data)
-    # headers = {"Mountbit-Auth": token}
     res = req.post(url=upload_url, files=data)
 
     if res.status_code == 200 or res.status_code == 201:
         file_confirm(confirm_url=confirm_url)
     else:
-        #print(res.json())
-        print(res.text)
-        print(res.status_code)
         print("Error while uploading file!")
 
 
@@ -192,16 +179,12 @@ class Window(QtGui.QMainWindow):
         userId = self.idField.text()
         userPassword = self.pwField.text()
 
-        print(userId)
-        print(userPassword)
         params = {'login': 'email:' + userId, 'password': userPassword}
         res = req.post(base_url + api_url, params=params)
         res.raise_for_status()
         response_data = res.json()
         token = response_data['token']
-        print(token)
 
-        print(len(token))
         if len(token) == 32:
             self.setCentralWidget(self.widg_listView)
 
@@ -220,7 +203,6 @@ class Window(QtGui.QMainWindow):
     def pictureDropped(self, l):
         for url in l:
             if os.path.exists(url):
-                print(url)
                 icon = QtGui.QIcon(url)
                 pixmap = icon.pixmap(72, 72)
                 icon = QtGui.QIcon(pixmap)
