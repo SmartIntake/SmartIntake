@@ -140,8 +140,8 @@ class Window(QtGui.QMainWindow):
         if len(self.token) == 32:
             print(self.token)
             self.setCentralWidget(self.widg_listView)
-            self.getFilesList()
-
+            self.fileList = self.getFilesList()['content']
+            #content[path]
     def sendToTrash(self, evt):
         listItems = self.getItemsFromList()
         for file_name in listItems:
@@ -217,8 +217,10 @@ class Window(QtGui.QMainWindow):
         print(res)
         if res.status_code == 200:
             print(res.json())
+            return res.json()
         else:
             print(res.json())
+        
 
     def file_confirm(self, confirm_url):
         headers = {"Mountbit-Auth": self.token}
