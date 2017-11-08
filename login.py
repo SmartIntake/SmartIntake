@@ -66,6 +66,12 @@ class Window(QtGui.QMainWindow):
         self.setGUI()
 
     def setGUI(self):
+        self.setDDListGUI()
+        self.setLoginGUI()
+
+        self.setCentralWidget(self.widg_login)
+
+    def setDDListGUI(self):
         self.list = DragListView(self)
         self.connect(self.list, QtCore.SIGNAL("dropped"), self.pictureDropped)
 
@@ -83,8 +89,7 @@ class Window(QtGui.QMainWindow):
 
         self.widg_listView.setLayout(self.layout_main)
 
-
-
+    def setLoginGUI(self):
         self.idField = QtGui.QLineEdit(self)
 
         self.pwField = QtGui.QLineEdit(self)
@@ -120,8 +125,6 @@ class Window(QtGui.QMainWindow):
         self.layout_main1.addWidget(self.sendBtn)
 
         self.widg_login.setLayout(self.layout_main1)
-
-        self.setCentralWidget(self.widg_login)
 
     def loginAction(self):
         api_url = '/api/1/accounts/login/'
