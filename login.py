@@ -2,7 +2,7 @@
 """
 Created on Tue Nov  7 19:47:10 2017
 
-@author: LEaps
+@author: LEaps & dev.Fallingstar
 """
 
 import sys
