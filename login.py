@@ -140,8 +140,7 @@ class Window(QtGui.QMainWindow):
         if len(self.token) == 32:
             print(self.token)
             self.setCentralWidget(self.widg_listView)
-            self.fileList = self.getFilesList()['content']
-            #content[path]
+    
     def sendToTrash(self, evt):
         listItems = self.getItemsFromList()
         for file_name in listItems:
@@ -217,7 +216,7 @@ class Window(QtGui.QMainWindow):
         print(res)
         if res.status_code == 200:
             print(res.json())
-            return res.json()
+            return res.json()['content']
         else:
             print(res.json())
         
