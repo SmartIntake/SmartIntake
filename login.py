@@ -140,7 +140,8 @@ class Window(QtGui.QMainWindow):
         if len(self.token) == 32:
             print(self.token)
             self.setCentralWidget(self.widg_listView)
-    
+            self.fileList = self.getFilesList()['content']
+
     def sendToTrash(self, evt):
         listItems = self.getItemsFromList()
         for file_name in listItems:
@@ -170,21 +171,41 @@ class Window(QtGui.QMainWindow):
         return items
 
     def send_file(self, file_name):
+        originPath = file_name
         url = "http://api.cloudike.hyunhoo.xyz/api/1/files/create/"
         headers = {"Mountbit-Auth": self.token}
+
+        if str(file_name).endswith("/"):
+            isDirectory = True
+        else:
+            isDirectory = False
+
+        if isDirectory:
+            file_name_split = file_name.split("/")
+            file_name = "/".join(file_name_split[0:len(file_name_split)-1])
+            file_name = file_name+".zip"
+            self.zipFile(dirPath=originPath, zipPath=file_name)
+        else:
+            file_name = file_name
+
         short_file_name = str(file_name).split("/")[-1]
-        print("final file name : " + short_file_name)
-        data = {"path": "/" + short_file_name,
+
+        if short_file_name.endswith(".jpg") or short_file_name.endswith(".png") or short_file_name.endswith(".bmp") or short_file_name.endswith(".jpeg"):
+            path = "/img/" + short_file_name
+        elif short_file_name.endswith(".mp4") or short_file_name.endswith(".avi") or short_file_name.endswith(".mp3") or short_file_name.endswith(".mkv") or short_file_name.endswith(".wmv"):
+            path = "/playable/" + short_file_name
+        else:
+            path = "/etc/" + short_file_name
+
+        data = {"path": path,
                 "overwrite": 1,
                 "multipart": False}
 
         res = req.post(url=url, data=data, headers=headers)
-        print(res)
+
         if res.status_code == 200:
-            print(res.json())
             self.upload_file(response=res, file_name=file_name)
         else:
-            print(res.json())
             print("Error while sending file!")
 
     def upload_file(self, response, file_name):
@@ -229,6 +250,13 @@ class Window(QtGui.QMainWindow):
             print("File upload success!")
         else:
             print("Error while confirming file!")
+
+    def zipFile(self, dirPath, zipPath):
+        zipf = zipfile.ZipFile(zipPath, 'w', zipfile.ZIP_DEFLATED)
+        for root, dirs, files in os.walk(dirPath):
+            for file in files:
+                zipf.write(os.path.join(root, file))
+        zipf.close()
 
 def run():
     app = QtGui.QApplication(sys.argv)
