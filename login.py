@@ -237,7 +237,7 @@ class Window(QtGui.QMainWindow):
         print(res)
         if res.status_code == 200:
             print(res.json())
-            return res.json()
+            return res.json()['content']
         else:
             print(res.json())
         
