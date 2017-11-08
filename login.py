@@ -89,6 +89,17 @@ def upload_file(response, file_name):
     else:
         print("Error while uploading file!")
 
+def getFilesList():
+    url = "/api/1/metadata/?limit=500&offset=0&order_by=name"
+    headers = {"Mountbit-Auth": token}
+
+    res = req.post(url=url, headers=headers)
+    print(res)
+    if res.status_code == 200:
+        print(res.json())
+    else:
+        print(res.json())
+    
 
 def file_confirm(confirm_url):
     headers = {"Mountbit-Auth": token}
