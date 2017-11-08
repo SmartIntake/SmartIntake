@@ -14,7 +14,6 @@ from PyQt4 import QtGui, QtCore
 base_url = 'http://api.cloudike.hyunhoo.xyz'
 
 links = []
-token = ""
 
 class DragListView(QtGui.QListWidget):
     def __init__(self, type, parent=None):
@@ -49,73 +48,12 @@ class DragListView(QtGui.QListWidget):
     def mouseDoubleClickEvent(self, QMouseEvent):
         self.takeItem(self.currentRow())
 
-def send_file(file_name):
-    url = "http://api.cloudike.hyunhoo.xyz/api/1/files/create/"
-    headers = {"Mountbit-Auth": token}
-    short_file_name = str(file_name).split("/")[-1]
-    print("final file name : "+short_file_name)
-    data = {"path": "/"+short_file_name,
-            "overwrite": 1,
-            "multipart": False}
-
-    res = req.post(url=url, data=data, headers=headers)
-    print(res)
-    if res.status_code == 200:
-        print(res.json())
-        upload_file(response=res, file_name=file_name)
-    else:
-        print(res.json())
-        print("Error while sending file!")
-
-
-def upload_file(response, file_name):
-    json_data =response.json()
-    confirm_url = json_data["confirm_url"]
-    upload_url = json_data["url"]
-
-    keys = dict(json_data["headers"]).keys()
-
-    data = list()
-
-    for key in keys:
-        tmp_tuple = (key, dict(json_data["headers"])[key])
-        data.append(tmp_tuple)
-    tmp_tuple = ('file', open(file_name, 'rb'))
-    data.append(tmp_tuple)
-    res = req.post(url=upload_url, files=data)
-
-    if res.status_code == 200 or res.status_code == 201:
-        file_confirm(confirm_url=confirm_url)
-    else:
-        print("Error while uploading file!")
-
-def getFilesList():
-    url = "/api/1/metadata/?limit=500&offset=0&order_by=name"
-    headers = {"Mountbit-Auth": token}
-
-    res = req.post(url=url, headers=headers)
-    print(res)
-    if res.status_code == 200:
-        print(res.json())
-    else:
-        print(res.json())
-    
-
-def file_confirm(confirm_url):
-    headers = {"Mountbit-Auth": token}
-
-    res = req.post(url=confirm_url, headers=headers)
-    if res.status_code == 200:
-        print("File upload success!")
-    else:
-        print("Error while confirming file!")
 
 class Window(QtGui.QMainWindow):
     def __init__(self):
         super(Window, self).__init__()
         self.setGeometry(50, 50, 200, 100)
         self.setWindowTitle("TEST APPLICATION")
-        # self.setWindowIcon(QtGui.QIcon(''))
 
         extractAction = QtGui.QAction("&GEt", self)
         extractAction.setShortcut("Ctrl+Q");
@@ -194,16 +132,18 @@ class Window(QtGui.QMainWindow):
         res = req.post(base_url + api_url, params=params)
         res.raise_for_status()
         response_data = res.json()
-        token = response_data['token']
+        self.token = response_data['token']
 
-        if len(token) == 32:
+        if len(self.token) == 32:
+            print(self.token)
             self.setCentralWidget(self.widg_listView)
+            self.getFilesList()
 
     def sendToTrash(self, evt):
         listItems = self.getItemsFromList()
         for file_name in listItems:
             print("uploading : " + file_name)
-            send_file(file_name)
+            self.send_file(file_name)
 
     def clearList(self, evt):
         for index in range(0, self.list.count()):
@@ -226,6 +166,65 @@ class Window(QtGui.QMainWindow):
         for index in range(self.list.count()):
             items.append(self.list.item(index).text())
         return items
+
+    def send_file(self, file_name):
+        url = "http://api.cloudike.hyunhoo.xyz/api/1/files/create/"
+        headers = {"Mountbit-Auth": self.token}
+        short_file_name = str(file_name).split("/")[-1]
+        print("final file name : " + short_file_name)
+        data = {"path": "/" + short_file_name,
+                "overwrite": 1,
+                "multipart": False}
+
+        res = req.post(url=url, data=data, headers=headers)
+        print(res)
+        if res.status_code == 200:
+            print(res.json())
+            self.upload_file(response=res, file_name=file_name)
+        else:
+            print(res.json())
+            print("Error while sending file!")
+
+    def upload_file(self, response, file_name):
+        json_data = response.json()
+        confirm_url = json_data["confirm_url"]
+        upload_url = json_data["url"]
+
+        keys = dict(json_data["headers"]).keys()
+
+        data = list()
+
+        for key in keys:
+            tmp_tuple = (key, dict(json_data["headers"])[key])
+            data.append(tmp_tuple)
+        tmp_tuple = ('file', open(file_name, 'rb'))
+        data.append(tmp_tuple)
+        res = req.post(url=upload_url, files=data)
+
+        if res.status_code == 200 or res.status_code == 201:
+            self.file_confirm(confirm_url=confirm_url)
+        else:
+            print("Error while uploading file!")
+
+    def getFilesList(self):
+        url = "http://api.cloudike.hyunhoo.xyz/api/1/metadata/?limit=500&offset=0&order_by=name"
+        headers = {"Mountbit-Auth": self.token}
+        print(headers)
+        res = req.get(url=url, headers=headers)
+        print(res)
+        if res.status_code == 200:
+            print(res.json())
+        else:
+            print(res.json())
+
+    def file_confirm(self, confirm_url):
+        headers = {"Mountbit-Auth": self.token}
+
+        res = req.post(url=confirm_url, headers=headers)
+        if res.status_code == 200:
+            print("File upload success!")
+        else:
+            print("Error while confirming file!")
 
 def run():
     app = QtGui.QApplication(sys.argv)
